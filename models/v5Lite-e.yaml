@@ -20,11 +20,14 @@ backbone:
     [ -1, 7, Shuffle_Block, [ 232, 1 ] ], # 4
     [ -1, 1, Shuffle_Block, [ 464, 2 ] ], # 5-P5/32
     [ -1, 1, Shuffle_Block, [ 464, 1 ] ], # 6
+
   ]
 
 # v5lite-e head
 head:
-  [ [ -1, 1, Conv, [ 96, 1, 1 ] ],
+  [
+    [ -1, 1, Conv, [ 96, 1, 1 ] ],
+    [-1, 1, SE, [96]],
     [ -1, 1, nn.Upsample, [ None, 2, 'nearest' ] ],
     [ [ -1, 4 ], 1, Concat, [ 1 ] ],  # cat backbone P4
     [ -1, 1, DWConvblock, [96, 3, 1] ],  # 10
@@ -35,12 +38,12 @@ head:
     [ -1, 1, DWConvblock, [96, 3, 1] ],  # 14 (P3/8-small)
 
     [-1, 1, DWConvblock, [96, 3, 2]],
-    [ [ -1, 11 ], 1, ADD, [ 1 ] ],  # cat head P4
+    [ [ -1, 12 ], 1, ADD, [ 1 ] ],  # cat head P4
     [ -1, 1, DWConvblock, [96, 3, 1] ],  # 17 (P4/16-medium)
 
     [ -1, 1, DWConvblock, [ 96, 3, 2 ] ],
-    [ [ -1, 7 ], 1, ADD, [ 1 ] ],  # cat head P5
+    [ [ -1, 8 ], 1, ADD, [ 1 ] ],  # cat head P5
     [ -1, 1, DWConvblock, [96, 3, 1] ],  # 20 (P5/32-large)
 
-    [ [ 14, 17, 20 ], 1, Detect, [ nc, anchors ] ],  # Detect(P3, P4, P5)
+    [ [ 15, 18, 21 ], 1, Detect, [ nc, anchors ] ],  # Detect(P3, P4, P5)
   ]
