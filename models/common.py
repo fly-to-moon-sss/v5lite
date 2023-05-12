@@ -1357,7 +1357,7 @@ class PConv(nn.Module):
         x = torch.cat((x1, x2), 1)
         x = self.conv(x)
         return x
-
+    
 class CARAFE(nn.Module):
     def __init__(self, c, k_enc=3, k_up=5, c_mid=64, scale=2):
         """ The unofficial implementation of the CARAFE module.
@@ -1397,3 +1397,21 @@ class CARAFE(nn.Module):
 
         X = torch.einsum('bkhw,bckhw->bchw', [W, X])  # b * c * h_ * w_
         return X
+class SE(nn.Module):
+    def __init__(self, c1, c2, r=16):
+        super(SE, self).__init__()
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.l1 = nn.Linear(c1, c1 // r, bias=False)
+        self.relu = nn.ReLU(inplace=True)
+        self.l2 = nn.Linear(c1 // r, c1, bias=False)
+        self.sig = nn.Sigmoid()
+    def forward(self, x):
+        print(x.size())
+        b, c, _, _ = x.size()
+        y = self.avgpool(x).view(b, c)
+        y = self.l1(y)
+        y = self.relu(y)
+        y = self.l2(y)
+        y = self.sig(y)
+        y = y.view(b, c, 1, 1)
+        return x * y.expand_as(x)
